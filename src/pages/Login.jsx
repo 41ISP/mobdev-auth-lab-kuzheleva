@@ -11,22 +11,25 @@ const Login = () => {
     const {setSession} = useUserStore()
 
     const handleSubmit = async (e) => {
-            e.preventDefault()
-            setError("")
-    
-            const user ={
-                username: e.target.username.value,
-                password: e.target.password.value,
-            }
-            try{
-                const data = await api.loginUser(user)
-                setSession(data.data)
-                navigate("/")
-            }catch(error) {
-              setError(error.response.data.error) 
-                console.error(error) 
-            }
+
+        e.preventDefault()
+        setError("")
+
+        const user = {
+            username: e.target.username.value,
+            password: e.target.password.value,
         }
+
+        try {
+            const data = await api.loginUser(user)
+            setSession(data.data)
+            navigate("/")
+        } catch (error) {
+            setError(error.response.data.error)
+            console.error(error)
+        }
+
+    }
 
     return (
         <div className="container">

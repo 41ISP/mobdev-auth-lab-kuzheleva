@@ -4,9 +4,10 @@ import { useUserStore } from '../store/useUserStore'
 
 const Logout = () => {
     const navigate = useNavigate()
-    const {setSession} = useUserStore()
+    const { clearSession } = useUserStore()
+
     useEffect(() => {
-        setSession(data.data)
+        clearSession()
         navigate('/')
     }, [])
     return <></>
