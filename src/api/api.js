@@ -30,11 +30,15 @@ const getItems= async () =>{
     return res
 }
 
-
 const sendItems= async(item) => {
  const res = await apiInstance.post("/items", item)
  return res
 }
+const getItemDetails = async (id) => {
+const res = await apiInstance.get(`/items/${id}`)
+return res
+
+}
 
  export const api = { 
-    registerUser, loginUser, getItems, sendItems }
+    registerUser, loginUser, getItems, sendItems, getItemDetails}

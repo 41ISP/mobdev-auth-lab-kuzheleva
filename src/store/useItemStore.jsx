@@ -3,7 +3,7 @@ import { api } from "../api/api"
 
 export const useItemsStore = create((set)=> ({
     items:[],
-    getItem: async()=>{
+    getItems: async()=>{
         try {
             const res = await api.getItems()
             set({items: res.data})
