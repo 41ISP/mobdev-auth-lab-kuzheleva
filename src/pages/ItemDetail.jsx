@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import Input from "../components/Input"
 import Button from "../components/Button"
 import { useItemsStore } from "../store/useItemStore"
@@ -7,13 +7,33 @@ import { useUserStore } from "../store/useUserStore"
 import { api } from "../api/api"
 
 const ItemDetail = () => {
-    const handleBid = () => { }
+
+    const [bids, setBids] = useState([])
     const { id } = useParams()
     const [item, setItem] = useState(undefined)
-
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState(null)
     const [timerId, setTimerId] = useState(undefined)
+    const session = useUserStore(state => state.session)
+    const navigate = useNavigate()
+    const [isOwner, setIsOwner] = useState(undefined)
+
+    const handleBid = async (e) => {
+        e.preventDefault()
+        setError("")
+
+        const form = e.target
+        const amount = Number(form.bidInput.value)
+
+        try {
+            await api.createBid({ id, amount })
+            form.reset()
+            setBids((await api.getItemBids(id)).data)
+        } catch (err) {
+            setError(err?.message ?? String(err))
+        }
+    }
+
 
     useEffect(() => {
         const load = async () => {
@@ -27,10 +47,55 @@ const ItemDetail = () => {
             }
             finally {
                 setIsLoading(false)
+
+            }
+        }
+
+        const loadBids = async () => {
+            setIsLoading(true)
+            try {
+                setBids((await api.getItemBids(id)).data)
+            } catch (error) {
+                setError(error.message || "Something went wrong")
+                console.error(error)
+            } finally {
+                setIsLoading(false)
             }
         }
         load()
+        loadBids()
+        setTimerId(setInterval(() => {
+            (async () => {
+                try {
+                    const res = await api.getItemBids(id)
+                    setBids(res.data)
+                } catch (error) { }
+            })()
+        }, 10000))
+        return () => {
+            clearInterval(timerId)
+        }
+
     }, [])
+
+    useEffect(() => {
+        session && item && setIsOwner(session?.user?.id === item.userId)
+    }, [session, item])
+    const handleDelete = async () => {
+        try {
+            await api.deleteItems({ id })
+            await useItemsStore.getState().getItems()
+            navigate("/")
+        } catch (err) {
+            console.error(err)
+            setError(err.response?.data?.message || "Не удалось удалить товар")
+        }
+        clearInterval(timerId)
+    }
+
+
+
+
 
     return (
         <div className="container">
@@ -66,8 +131,8 @@ const ItemDetail = () => {
                             <div class="price-section">
                                 <div class="starting-price">Начальная цена:</div>
                                 <div class="current-price">{item.price}</div>
-                                <div class="highest-bid">Текущая ставка: {item.highestBid}</div>
-
+                                {bids.length > 0 && <div class="highest-bid">Текущая ставка: {bids[0].amount}</div>
+                                }
                                 <form class="bid-form" onSubmit={handleBid}>
                                     <Input
                                         type="number"
@@ -78,6 +143,11 @@ const ItemDetail = () => {
                                         step="100"
                                     />
                                     <Button type="submit" class="btn-bid">Сделать ставку</Button>
+                                    {isOwner && (
+                                        <Button onClick={handleDelete} type="button" className="btn-delete" >
+                                            Удалить товар
+                                        </Button>
+                                    )}
                                 </form>
                             </div>
 

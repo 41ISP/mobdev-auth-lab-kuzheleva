@@ -2,7 +2,7 @@ import axios from "axios";
 import { useUserStore } from "../store/useUserStore";
 
 const apiInstance = axios.create({
-    baseURL: "https://api.kitek-pg.ru/api/marketplace/",
+    baseURL: "https://api.kitek-pg.ru/api/marketplace",
     headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
@@ -40,5 +40,39 @@ return res
 
 }
 
+const createBid = async ({id, amount}) => {
+    const res = await apiInstance.post(`/items/${id}/bids`, {amount})
+    return res.data
+}
+
+const getMyBids = async () => {
+    const res = await apiInstance.get("/bids/my")
+    return res
+}
+
+const getItemBids = async (id) => {
+    const res = await apiInstance.get(`/items/${id}/bids`)
+    return res
+}
+const getStats = async () => {
+    const res = await apiInstance.get("/stats")
+    return res
+}
+
+
+const deleteItems = async ({id}) => {
+    const res = await apiInstance.delete(`/items/${id}`)
+    return res.data
+}
+
  export const api = { 
-    registerUser, loginUser, getItems, sendItems, getItemDetails}
+    registerUser, 
+    loginUser, 
+    getItems, 
+    sendItems, 
+    getItemDetails, 
+    getMyBids, 
+    getItemBids, 
+    createBid,
+    getStats,
+    deleteItems}
