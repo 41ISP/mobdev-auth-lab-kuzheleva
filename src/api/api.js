@@ -27,7 +27,7 @@ const loginUser = async (user) =>{
 
 const getItems= async () =>{
     const res = await apiInstance.get("/items")
-    return res
+    return res.data
 }
 
 const sendItems= async(item) => {

@@ -1,30 +1,35 @@
 import { create } from "zustand"
 import { api } from "../api/api"
 
-export const useItemsStore = create((set)=> ({
+export const useItemStore = create((set) => ({
     item: null,
     stats: null,
     items: [],
+
     getItems: async () => {
         try {
-            const res = await api.getItems()
-            set({items: res.data})
-        } catch(error) {
+            const data = await api.getItems()  // api уже возвращает res.data
+            set({ items: data })
+        } catch (error) {
             console.error(error)
         }
     },
+
     getStats: async () => {
         try {
-            const res = await api.getStats()
-            set({stats: res.data})
-        } catch(error) {
+            const data = await api.getStats()
+            set({ stats: data })
+        } catch (error) {
             console.error(error)
         }
     },
+
     getItem: async (id) => {
         try {
-            const res = await api.getItem(id);
-            set({ item: res.data });
+            const data = await api.getItemDetails(id)  // исправлено имя функции
+            set({ item: data })
         } catch (error) {
-            console.error(error); } },
+            console.error(error)
+        }
+    },
 }))

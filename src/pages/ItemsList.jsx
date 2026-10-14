@@ -1,50 +1,64 @@
 import { useEffect, useState } from 'react'
 import ItemCard from '../components/ItemCard'
-import { api } from '../api/api'
+import { useItemStore } from '../store/useItemStore'
 
 const ItemsList = () => {
-const [items, setItems] = useState([])
+  const { items, getItems, stats, getStats } = useItemStore()
     const [error, setError] = useState('')
+      const [timerId, setTimerId] = useState(undefined)
+
     useEffect(() => {
-        async function getItems() {
-            setError("")
+        const loadData = async () => { 
+            setError('')
             try {
-                const data= await api.getItems()
-                setItems(data.data)
+                await getStats()
+                await getItems()
             } catch (error) {
-               
+                console.error(error)
+                setError(error.response?.data?.error || 'Ошибка загрузки')
             }
         }
-        getItems()
+        loadData()
+    setTimerId(setInterval(() => {
+            (async () => {
+                try {
+                    await getItems()
+                } catch (error) {
+                }
+            })()
+        }, 10000))
+        return () => {
+            clearInterval(timerId)
+        }
     }, [])
 
     return (
         <div className="container">
-            <div class="page-header">
+            <div className="page-header">
                 <h1>Все товары</h1>
             </div>
-            <div class="stats">
-                <div class="stat-item">
-                    <span class="stat-value">0</span>
-                    <span class="stat-label">Товаров</span>
+            <div className="stats">
+                <div className="stat-item">
+                    <span className="stat-value">{stats?.totalItems ?? 0}</span>
+                    <span className="stat-label">Товаров</span>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-value">0</span>
-                    <span class="stat-label">Ставок</span>
+                <div className="stat-item">
+                    <span className="stat-value">{stats?.totalBids ?? 0}</span>
+                    <span className="stat-label">Ставок</span>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-value">0</span>
-                    <span class="stat-label">Активных</span>
+                <div className="stat-item">
+                    <span className="stat-value">{stats?.activeItems ?? 0}</span>
+                    <span className="stat-label">Активных</span>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-value">0₽</span>
-                    <span class="stat-label">Средняя цена</span>
+                <div className="stat-item">
+                    <span className="stat-value">{stats?.averageItemPrice ?? 0}₽</span>
+                    <span className="stat-label">Средняя цена</span>
                 </div>
             </div>
 
-            <div class="items-grid">
-                {items.map((item, i) => (
-                    <ItemCard key={i} {...item} />
+            <div className="items-grid">
+                {items?.map((item) => (
+                    <ItemCard key={item.id} {...item} />
                 ))}
             </div>
         </div>
